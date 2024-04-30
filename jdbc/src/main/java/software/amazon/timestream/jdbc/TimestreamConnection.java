@@ -24,6 +24,7 @@ import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.PropertiesFileCredentialsProvider;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.timestreamquery.AmazonTimestreamQuery;
 import com.amazonaws.services.timestreamquery.AmazonTimestreamQueryClient;
@@ -59,7 +60,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Timestream implementation of Connection, represents a physical connection to a database.
+ * Timestream implementation of Connection, represents a physical connection to
+ * a database.
  */
 public class TimestreamConnection implements java.sql.Connection {
   private static final Logger LOGGER = LoggerFactory.getLogger(TimestreamConnection.class);
@@ -77,7 +79,8 @@ public class TimestreamConnection implements java.sql.Connection {
   AmazonTimestreamQueryClientBuilder queryClientBuilder;
 
   /**
-   * Constructor to seed the connection with the necessary information and configuration to
+   * Constructor to seed the connection with the necessary information and
+   * configuration to
    * establish a connection.
    *
    * @param info                The connection properties.
@@ -85,24 +88,26 @@ public class TimestreamConnection implements java.sql.Connection {
    * @throws SQLException if property is not supported by the driver.
    */
   TimestreamConnection(
-    @NonNull final Properties info,
-    @NonNull final ClientConfiguration clientConfiguration) throws SQLException {
+      @NonNull final Properties info,
+      @NonNull final ClientConfiguration clientConfiguration) throws SQLException {
     this(info, clientConfiguration, HttpClients.createDefault());
   }
 
   /**
-   * Constructor to seed the connection with the necessary information and configuration to
+   * Constructor to seed the connection with the necessary information and
+   * configuration to
    * establish a connection.
    *
    * @param info                The connection properties.
    * @param clientConfiguration The client configuration.
-   * @param httpClient          The HTTP Client to be used during SAML Authentication.
+   * @param httpClient          The HTTP Client to be used during SAML
+   *                            Authentication.
    * @throws SQLException if property is not supported by the driver.
    */
   TimestreamConnection(
-    @NonNull final Properties info,
-    @NonNull final ClientConfiguration clientConfiguration,
-    @NonNull final CloseableHttpClient httpClient) throws SQLException {
+      @NonNull final Properties info,
+      @NonNull final ClientConfiguration clientConfiguration,
+      @NonNull final CloseableHttpClient httpClient) throws SQLException {
     this.connectionProperties = info;
     this.clientConfiguration = clientConfiguration;
     initializeClients(info, httpClient);
@@ -139,7 +144,8 @@ public class TimestreamConnection implements java.sql.Connection {
   public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
     verifyOpen();
 
-    // Even though Arrays are supported, the only reason to create an Array in the application is to pass it as
+    // Even though Arrays are supported, the only reason to create an Array in the
+    // application is to pass it as
     // a parameter which is not supported.
     throw Error.createSQLFeatureNotSupportedException(LOGGER, Error.PARAMETERS_NOT_SUPPORTED);
   }
@@ -204,7 +210,8 @@ public class TimestreamConnection implements java.sql.Connection {
   public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
     verifyOpen();
 
-    // Even though Arrays are supported, the only reason to create a Struct in the application is to pass it as
+    // Even though Arrays are supported, the only reason to create a Struct in the
+    // application is to pass it as
     // a parameter which is not supported.
     throw Error.createSQLFeatureNotSupportedException(LOGGER, Error.PARAMETERS_NOT_SUPPORTED);
   }
@@ -418,7 +425,8 @@ public class TimestreamConnection implements java.sql.Connection {
   @Override
   public void setAutoCommit(boolean autoCommit) throws SQLException {
     verifyOpen();
-    // Fake allowing autoCommit to be turned off, even though transactions are not supported, as some applications
+    // Fake allowing autoCommit to be turned off, even though transactions are not
+    // supported, as some applications
     // turn this off without checking support.
     LOGGER.debug("Transactions are not supported, do nothing for setAutoCommit.");
   }
@@ -552,7 +560,8 @@ public class TimestreamConnection implements java.sql.Connection {
   /**
    * Getter for metadataPreparedStatementEnabled.
    *
-   * @return true if metaData prepared statement is enabled; otherwise, return false.
+   * @return true if metaData prepared statement is enabled; otherwise, return
+   *         false.
    */
   boolean isMetadataPreparedStatementEnabled() {
     return metadataPreparedStatementEnabled;
@@ -565,10 +574,10 @@ public class TimestreamConnection implements java.sql.Connection {
    */
   AmazonTimestreamQueryClientBuilder getQueryClientBuilder() {
     final AmazonTimestreamQueryClientBuilder client = AmazonTimestreamQueryClient
-      .builder()
-      .withCredentials(this.queryClientBuilder.getCredentials())
-      .withClientConfiguration(
-        new ClientConfiguration(this.queryClientBuilder.getClientConfiguration()));
+        .builder()
+        .withCredentials(this.queryClientBuilder.getCredentials())
+        .withClientConfiguration(
+            new ClientConfiguration(this.queryClientBuilder.getClientConfiguration()));
 
     final String region = this.queryClientBuilder.getRegion();
     if (region != null) {
@@ -591,9 +600,10 @@ public class TimestreamConnection implements java.sql.Connection {
   /**
    * Check that the result set attributes are supported.
    *
-   * @param resultSetType The type of result set requested.
+   * @param resultSetType        The type of result set requested.
    * @param resultSetConcurrency The concurrency of the result set requested.
-   * @throws SQLFeatureNotSupportedException if the result set type is not supported.
+   * @throws SQLFeatureNotSupportedException if the result set type is not
+   *                                         supported.
    */
   private void checkStatementAttributes(int resultSetType, int resultSetConcurrency)
       throws SQLFeatureNotSupportedException {
@@ -609,14 +619,15 @@ public class TimestreamConnection implements java.sql.Connection {
    *
    * @param info                The connection properties.
    * @param credentialsProvider if property is not supported by the driver.
-   * @throws SQLException if a Timestream service endpoint is specified without a signing region.
+   * @throws SQLException if a Timestream service endpoint is specified without a
+   *                      signing region.
    */
   void buildQueryClientAndVerifyConnection(
-    final Properties info,
-    final AWSCredentialsProvider credentialsProvider) throws SQLException {
+      final Properties info,
+      final AWSCredentialsProvider credentialsProvider) throws SQLException {
     this.queryClientBuilder = AmazonTimestreamQueryClient
-      .builder()
-      .withClientConfiguration(this.clientConfiguration);
+        .builder()
+        .withClientConfiguration(this.clientConfiguration);
 
     final Object endpoint = info.get(TimestreamConnectionProperty.ENDPOINT.getConnectionProperty());
 
@@ -646,55 +657,56 @@ public class TimestreamConnection implements java.sql.Connection {
       queryClient.query(new QueryRequest().withQueryString("SELECT 1"));
     } catch (final Exception sdkClientException) {
       throw Error.createSQLException(
-        LOGGER,
-        Constants.CONNECTION_FAILURE_SQL_STATE,
-        sdkClientException,
-        Error.CONN_FAILED);
+          LOGGER,
+          Constants.CONNECTION_FAILURE_SQL_STATE,
+          sdkClientException,
+          Error.CONN_FAILED);
     }
   }
 
   /**
    * Configures the SDK's network settings.
    *
-   * @param info                The {@link Properties} used to create a connection.
+   * @param info                The {@link Properties} used to create a
+   *                            connection.
    * @param clientConfiguration The query client's configuration.
    * @throws SQLException if one of the options is invalid.
    */
   private void configureSdkOptions(
-    final Properties info,
-    final ClientConfiguration clientConfiguration) throws SQLException {
+      final Properties info,
+      final ClientConfiguration clientConfiguration) throws SQLException {
     try {
       final int requestTimeout = Integer.parseInt(info
-        .getOrDefault(
-          TimestreamConnectionProperty.REQUEST_TIMEOUT.getConnectionProperty(),
-          TimestreamConnectionProperty.REQUEST_TIMEOUT.getDefaultValue())
-        .toString());
+          .getOrDefault(
+              TimestreamConnectionProperty.REQUEST_TIMEOUT.getConnectionProperty(),
+              TimestreamConnectionProperty.REQUEST_TIMEOUT.getDefaultValue())
+          .toString());
 
       final int socketTimeout = Integer.parseInt(info
-        .getOrDefault(
-          TimestreamConnectionProperty.SOCKET_TIMEOUT.getConnectionProperty(),
-          TimestreamConnectionProperty.SOCKET_TIMEOUT.getDefaultValue())
-        .toString());
+          .getOrDefault(
+              TimestreamConnectionProperty.SOCKET_TIMEOUT.getConnectionProperty(),
+              TimestreamConnectionProperty.SOCKET_TIMEOUT.getDefaultValue())
+          .toString());
 
       if (socketTimeout < 0) {
         throw Error.createSQLException(LOGGER, Error.INVALID_TIMEOUT, socketTimeout);
       }
 
       final int maxConnections = Integer.parseInt(info
-        .getOrDefault(
-          TimestreamConnectionProperty.MAX_CONNECTIONS.getConnectionProperty(),
-          TimestreamConnectionProperty.MAX_CONNECTIONS.getDefaultValue())
-        .toString());
+          .getOrDefault(
+              TimestreamConnectionProperty.MAX_CONNECTIONS.getConnectionProperty(),
+              TimestreamConnectionProperty.MAX_CONNECTIONS.getDefaultValue())
+          .toString());
 
       if (maxConnections < 0) {
         throw Error.createSQLException(LOGGER, Error.INVALID_MAX_CONNECTIONS, maxConnections);
       }
 
       final String maxRetryCount = info
-        .getOrDefault(
-          TimestreamConnectionProperty.MAX_RETRY_COUNT.getConnectionProperty(),
-          TimestreamConnectionProperty.MAX_RETRY_COUNT.getDefaultValue())
-        .toString();
+          .getOrDefault(
+              TimestreamConnectionProperty.MAX_RETRY_COUNT.getConnectionProperty(),
+              TimestreamConnectionProperty.MAX_RETRY_COUNT.getDefaultValue())
+          .toString();
 
       if (!maxRetryCount.isEmpty()) {
         final int maxRetryCountClient = Integer.parseInt(maxRetryCount);
@@ -706,23 +718,24 @@ public class TimestreamConnection implements java.sql.Connection {
       }
 
       clientConfiguration
-        .withRequestTimeout(requestTimeout)
-        .withSocketTimeout(socketTimeout)
-        .withMaxConnections(maxConnections);
+          .withRequestTimeout(requestTimeout)
+          .withSocketTimeout(socketTimeout)
+          .withMaxConnections(maxConnections);
     } catch (final NumberFormatException ne) {
-      throw Error.createSQLException(LOGGER, Constants.CONNECTION_EXCEPTION_SQL_STATE, ne, Error.INVALID_NUMERIC_CONNECTION_VALUE);
+      throw Error.createSQLException(LOGGER, Constants.CONNECTION_EXCEPTION_SQL_STATE, ne,
+          Error.INVALID_NUMERIC_CONNECTION_VALUE);
     }
   }
 
   /**
    * Creates an {@link TimestreamOktaCredentialsProvider} instance.
    *
-   * @param httpClient The HTTP Client to be used during SAML Authentication.
+   * @param httpClient    The HTTP Client to be used during SAML Authentication.
    * @param oktaFieldsMap A {@link Map} that contains all the required fields.
    * @return an {@link TimestreamOktaCredentialsProvider} instance.
    */
   TimestreamOktaCredentialsProvider createOktaCredentialsProvider(CloseableHttpClient httpClient,
-    final Map<String, String> oktaFieldsMap) {
+      final Map<String, String> oktaFieldsMap) {
     LOGGER.info("Creating an Okta credentials provider.");
     return new TimestreamOktaCredentialsProvider(httpClient, oktaFieldsMap);
   }
@@ -730,12 +743,13 @@ public class TimestreamConnection implements java.sql.Connection {
   /**
    * Creates an {@link TimestreamAzureADCredentialsProvider} instance.
    *
-   * @param httpClient The HTTP Client to be used during SAML Authentication.
+   * @param httpClient       The HTTP Client to be used during SAML
+   *                         Authentication.
    * @param azureADFieldsMap A {@link Map} that contains all the required fields.
    * @return an {@link TimestreamAzureADCredentialsProvider} instance.
    */
   TimestreamAzureADCredentialsProvider createAzureADCredentialsProvider(
-    CloseableHttpClient httpClient, final Map<String, String> azureADFieldsMap) {
+      CloseableHttpClient httpClient, final Map<String, String> azureADFieldsMap) {
     LOGGER.info("Creating an Azure AD credentials provider.");
     return new TimestreamAzureADCredentialsProvider(httpClient, azureADFieldsMap);
   }
@@ -743,7 +757,7 @@ public class TimestreamConnection implements java.sql.Connection {
   /**
    * Initialize the clients for communication with the Timestream service.
    *
-   * @param info The connection properties.
+   * @param info       The connection properties.
    * @param httpClient The HTTP Client to be used during SAML Authentication.
    * @throws SQLException if property is not supported by the driver.
    */
@@ -755,10 +769,11 @@ public class TimestreamConnection implements java.sql.Connection {
         .getOrDefault(TimestreamConnectionProperty.ENABLE_METADATA_PREPARED_STATEMENT.getConnectionProperty(),
             TimestreamConnectionProperty.ENABLE_METADATA_PREPARED_STATEMENT.getDefaultValue())
         .toString());
-      }
+  }
 
   /**
-   * Set a new warning if there were none, or add a new warning to the end of the list.
+   * Set a new warning if there were none, or add a new warning to the end of the
+   * list.
    *
    * @param warning the {@link SQLWarning} to be set.
    */
@@ -783,9 +798,10 @@ public class TimestreamConnection implements java.sql.Connection {
   }
 
   /**
-   * Creates the custom credentials provider of the class if an appropriate classname is provided.
+   * Creates the custom credentials provider of the class if an appropriate
+   * classname is provided.
    *
-   * @param info  The connection properties.
+   * @param info       The connection properties.
    * @param httpClient The HTTP Client to be used during SAML Authentication.
    * @return An AWSCredentialsProvider instance.
    * @throws SQLException if property is not supported by the driver.
@@ -801,16 +817,16 @@ public class TimestreamConnection implements java.sql.Connection {
       switch (idpName.toLowerCase()) {
         case Constants.OKTA_IDP_NAME: {
           final Map<String, String> oktaFieldsMap = extractRequiredProperties(
-            info,
-            TimestreamConnectionProperty.OKTA_PROPERTY_SET);
+              info,
+              TimestreamConnectionProperty.OKTA_PROPERTY_SET);
           return createOktaCredentialsProvider(httpClient, oktaFieldsMap).createCredentialsProvider();
         }
 
         case Constants.AAD_IDP_NAME: {
           final Map<String, String> azureADFieldsMap = extractRequiredProperties(info,
-            TimestreamConnectionProperty.AAD_PROPERTY_SET);
+              TimestreamConnectionProperty.AAD_PROPERTY_SET);
           return createAzureADCredentialsProvider(httpClient, azureADFieldsMap)
-            .createCredentialsProvider();
+              .createCredentialsProvider();
         }
 
         default: {
@@ -830,13 +846,13 @@ public class TimestreamConnection implements java.sql.Connection {
         case Constants.PROPERTIES_FILE_CREDENTIALS_PROVIDER_CLASSNAME: {
           LOGGER.info("Creating a PropertiesFileCredentialsProvider.");
           final String customCredentialsFilePath = info
-            .getOrDefault(
-              TimestreamConnectionProperty.CUSTOM_CREDENTIALS_FILE_PATH.getConnectionProperty(),
-              "")
-            .toString();
+              .getOrDefault(
+                  TimestreamConnectionProperty.CUSTOM_CREDENTIALS_FILE_PATH.getConnectionProperty(),
+                  "")
+              .toString();
           if (customCredentialsFilePath.isEmpty()) {
             throw Error
-              .createSQLException(LOGGER, Error.INVALID_CREDENTIALS_FILE_PATH);
+                .createSQLException(LOGGER, Error.INVALID_CREDENTIALS_FILE_PATH);
           }
 
           return new PropertiesFileCredentialsProvider(customCredentialsFilePath);
@@ -845,6 +861,11 @@ public class TimestreamConnection implements java.sql.Connection {
         case Constants.INSTANCE_PROFILE_CREDENTIALS_PROVIDER_CLASSNAME: {
           LOGGER.info("Creating an InstanceProfileCredentialsProvider.");
           return new InstanceProfileCredentialsProvider(false);
+        }
+
+        case Constants.PROFILE_CREDENTIALS_PROVIDER_CLASSNAME: {
+          LOGGER.info("Creating an ProfileCredentialsProvider.");
+          return new ProfileCredentialsProvider();
         }
 
         default: {
@@ -878,19 +899,22 @@ public class TimestreamConnection implements java.sql.Connection {
   }
 
   /**
-   * Checks if the specified keys exists in the Properties instance and returns a list with the
+   * Checks if the specified keys exists in the Properties instance and returns a
+   * list with the
    * values.
    *
-   * @param info             A Properties instance that contains the connection properties the user
+   * @param info             A Properties instance that contains the connection
+   *                         properties the user
    *                         provided.
-   * @param propertyNameList A String list that contains the field names that needs to be
+   * @param propertyNameList A String list that contains the field names that
+   *                         needs to be
    *                         extracted.
    * @return A Map containing the required key value pairs.
    * @throws SQLException if the values could not be found.
    */
   private Map<String, String> extractRequiredProperties(final Properties info,
-    EnumSet<TimestreamConnectionProperty> propertyNameList)
-    throws SQLException {
+      EnumSet<TimestreamConnectionProperty> propertyNameList)
+      throws SQLException {
     final Map<String, String> requiredPropertiesMap = new HashMap<>();
     for (TimestreamConnectionProperty property : propertyNameList) {
       final String propertyName = property.getConnectionProperty();
@@ -899,8 +923,8 @@ public class TimestreamConnection implements java.sql.Connection {
         requiredPropertiesMap.put(propertyName, value);
       } else {
         throw Error.createSQLException(
-          LOGGER,
-          Error.MISSING_REQUIRED_IDP_PARAMETER, propertyName);
+            LOGGER,
+            Error.MISSING_REQUIRED_IDP_PARAMETER, propertyName);
       }
     }
 

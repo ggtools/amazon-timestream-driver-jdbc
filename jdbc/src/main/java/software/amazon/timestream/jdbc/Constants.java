@@ -28,6 +28,7 @@ final class Constants {
   static final String UA_ID_PREFIX = "ts-jdbc.";
   static final String PROPERTIES_FILE_CREDENTIALS_PROVIDER_CLASSNAME = "propertiesfilecredentialsprovider";
   static final String INSTANCE_PROFILE_CREDENTIALS_PROVIDER_CLASSNAME = "instanceprofilecredentialsprovider";
+  static final String PROFILE_CREDENTIALS_PROVIDER_CLASSNAME = "profilecredentialsprovider";
   static final String OKTA_IDP_NAME = "okta";
   static final String OKTA_AWS_APP_NAME = "amazon_aws";
   static final String AAD_IDP_NAME = "azuread";
@@ -51,29 +52,30 @@ final class Constants {
   static final String CONNECTION_FAILURE_SQL_STATE = "08006";
 
   static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
-    .appendPattern("yyyy-MM-dd HH:mm:ss")
-    .optionalStart()
-    .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
-    .optionalEnd()
-    .toFormatter();
-
-  static final DateTimeFormatter DATE_FORMATTER = new DateTimeFormatterBuilder()
-    .appendPattern("yyyy-MM-dd")
-    .optionalStart()
-    .appendPattern(" HH:mm:ss")
-    .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
-    .optionalEnd()
-    .toFormatter();
-
-  static final DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
-    .appendOptional(DATE_TIME_FORMATTER)
-    .appendOptional(new DateTimeFormatterBuilder()
-      .appendPattern("HH:mm:ss")
+      .appendPattern("yyyy-MM-dd HH:mm:ss")
       .optionalStart()
       .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
       .optionalEnd()
-      .toFormatter())
-    .toFormatter();
+      .toFormatter();
 
-  private Constants() { }
+  static final DateTimeFormatter DATE_FORMATTER = new DateTimeFormatterBuilder()
+      .appendPattern("yyyy-MM-dd")
+      .optionalStart()
+      .appendPattern(" HH:mm:ss")
+      .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+      .optionalEnd()
+      .toFormatter();
+
+  static final DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
+      .appendOptional(DATE_TIME_FORMATTER)
+      .appendOptional(new DateTimeFormatterBuilder()
+          .appendPattern("HH:mm:ss")
+          .optionalStart()
+          .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+          .optionalEnd()
+          .toFormatter())
+      .toFormatter();
+
+  private Constants() {
+  }
 }
