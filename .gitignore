@@ -1,1 +1,3 @@
 jdbc/src/main/resources/META-INF/THIRD-PARTY-LICENSES.txt
+*/target/*
+target/*
